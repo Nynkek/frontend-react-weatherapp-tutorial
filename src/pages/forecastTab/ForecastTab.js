@@ -1,18 +1,21 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import './ForecastTab.css';
 import axios from "axios";
+import kelvinToCelsius from "../../helpers/kelvinToCelsius";
+import createDateString from "../../helpers/createDateString";
+import {TempContext} from "../../context/TempContextProvider";
 
-const apiKey = '04cef6f1e65431a93b30ee232682fe75'
+
 
 
 function ForecastTab({coordinates}) {
     const [forecasts, setForecasts] = useState([]);
-
+    const { kelvinToMetric } = useContext(TempContext);
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const result = await axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,current,hourly&appid=${apiKey}&lang=nl`)
+                const result = await axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.lat}&lon=${coordinates.lon}&exclude=minutely,current,hourly&appid=${process.env.REACT_APP_API_KEY}&lang=nl`)
                 console.log(result.data)
                 setForecasts(result.data.daily.slice(1, 6));
             } catch (e) {
@@ -27,10 +30,7 @@ function ForecastTab({coordinates}) {
 
     }, [coordinates]);
 
-    function createDateString(timestamp) {
-        const day = new Date(timestamp * 1000);
-        return day.toLocaleDateString('nl-NL', { weekday: 'long' });
-    }
+
 
   return (
 
@@ -44,7 +44,7 @@ function ForecastTab({coordinates}) {
 
                     <section className="forecast-weather">
             <span>
-              {day.temp.day}
+              {kelvinToMetric(day.temp.day)}
             </span>
                         <span className="weather-description">
                {day.weather[0].description}
